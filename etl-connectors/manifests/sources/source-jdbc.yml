@@ -1,3 +1,8 @@
+info:
+  title: JDBS Source
+  description: JDBC Source Configuration
+  version: 1.0.0
+
 components:
   schemas:
     JdbcSourceModel:

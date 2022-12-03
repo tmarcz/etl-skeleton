@@ -1,1 +1,60 @@
+// Ping request
+
+GET http://localhost:9610/ping
+
+> {%
+ client.assert(response.body, 'pong!');
+%}
+
+###
+
 // Run pipline job immidietly
+
+GET http://localhost:9610/instant/1
+
+> {%
+ client.assert(response.body, 'ok!');
+%}
+
+###
+
+// Create pipline cron scheduler
+
+POST http://localhost:9610/
+Content-Type: application/json
+
+{
+  "pipelineId": 1,
+  "schedulerType": 0,
+  "cron": "",
+  "startDate": "",
+  "endDate": "",
+  "active": true,
+  "running": "",
+  "nextRunDate": "",
+  "lastRunDate": "",
+  "lastRunSuccessStatus": "",
+  "createdDate": "",
+  "deleted": false
+}
+
+###
+
+// Force to run single async multithreaded triggering
+
+POST http://localhost:9610/force
+
+> {%
+ client.assert(response.body, 'ok!');
+%}
+
+###
+
+// Simulate complete request
+GET http://localhost:9610/complete/1
+
+> {%
+ client.assert(response.body, 'ok!');
+%}
+
+###

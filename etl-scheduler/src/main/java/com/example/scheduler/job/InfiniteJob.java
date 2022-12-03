@@ -1,6 +1,6 @@
 package com.example.scheduler.job;
 
-import com.example.scheduler.service.SchedulerService;
+//import com.example.scheduler.service.SchedulerService;
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -14,8 +14,8 @@ import java.util.Date;
 public class InfiniteJob {
     private static final Logger LOG = LoggerFactory.getLogger(InfiniteJob.class);
 
-    @Inject
-    private SchedulerService schedulerService;
+//    @Inject
+//    private SchedulerService schedulerService;
 
     @Scheduled(fixedRate = "5s")
     void execute() throws InterruptedException {

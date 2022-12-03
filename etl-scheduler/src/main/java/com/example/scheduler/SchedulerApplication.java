@@ -1,7 +1,6 @@
 package com.example.scheduler;
 
 import io.micronaut.runtime.Micronaut;
-import javafx.application.Application;
 
 import java.sql.DriverManager;
 import java.util.TimeZone;

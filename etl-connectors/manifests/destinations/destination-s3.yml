@@ -1,3 +1,8 @@
+info:
+  title: S3 Destination
+  description: S3 Destination Configuration
+  version: 1.0.0
+
 components:
   schemas:
     S3DestinationModel:

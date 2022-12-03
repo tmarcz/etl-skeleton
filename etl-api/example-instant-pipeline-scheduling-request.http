@@ -1,8 +1,10 @@
-// ! TODO: prepare starting request for full test for single pipeline instant scheduling request
+// Force to schedule instant pipeline job without cron setting
 
-POST http://example.com:8080/api/html/post HTTP/1.1
+POST http://localhost:9610/force
 Content-Type: application/json
 
-{ "key" : "value", "list": [1, 2, 3] }
+{
+  "pipelineId": 1
+}
 
-
+###

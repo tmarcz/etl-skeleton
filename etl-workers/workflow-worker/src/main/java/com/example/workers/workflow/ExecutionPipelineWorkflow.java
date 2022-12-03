@@ -1,6 +1,6 @@
 package com.example.workers.workflow;
 
-import com.example.dto.ExecutionStep;
+import com.example.commons.model.ExecutionStepPipelineModel;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
@@ -32,8 +32,8 @@ public interface ExecutionPipelineWorkflow {
     void terminate();
 
     @SignalMethod
-    void update(ExecutionStep executionStep);
+    void update(ExecutionStepPipelineModel executionStep);
 
     @QueryMethod
-    List<ExecutionStep> getSteps();
+    List<ExecutionStepPipelineModel> getSteps();
 }

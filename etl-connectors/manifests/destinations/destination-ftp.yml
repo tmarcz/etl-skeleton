@@ -1,3 +1,8 @@
+info:
+  title: FTP Destination
+  description: FTP Destination Configuration
+  version: 1.0.0
+
 components:
   schemas:
     FtpDestinationModel:

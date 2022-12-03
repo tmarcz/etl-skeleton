@@ -1,3 +1,8 @@
+info:
+  title: FTP Source
+  description: FTP Source Configuration
+  version: 1.0.0
+
 components:
   schemas:
     FtpSourceModel:

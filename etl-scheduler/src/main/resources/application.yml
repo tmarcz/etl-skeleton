@@ -2,7 +2,28 @@ micronaut:
   application:
     name: scheduler
   server:
-    port: 8801
+    port: 9610
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/example
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: test001
+    schema-generate: CREATE_DROP
+    dialect: POSTGRES
+    schema: demo
+
+#jpa.default.properties.hibernate.hbm2ddl.auto: update
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: validate
+        show_sql: true
+
 
 netty:
   default:

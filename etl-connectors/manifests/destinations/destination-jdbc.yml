@@ -1,3 +1,8 @@
+info:
+  title: JDBC Destination
+  description: JDBC Destination Configuration
+  version: 1.0.0
+
 components:
   schemas:
     JdbcDestinationModel:

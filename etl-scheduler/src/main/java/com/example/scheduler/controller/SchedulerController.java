@@ -1,18 +1,30 @@
 package com.example.scheduler.controller;
 
-import com.example.scheduler.service.SchedulerService;
+import com.example.scheduler.model.PipelineSchedulerModel;
+import com.example.scheduler.service.PipelineSchedulerService;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
 import jakarta.inject.Inject;
 
-@Controller("/scheduler")
+import javax.validation.Valid;
+
+import static io.micronaut.http.HttpResponse.ok;
+
+@Controller("/")
 public class SchedulerController {
-
     @Inject
-    private SchedulerService schedulerService;
+    private PipelineSchedulerService pipelineSchedulerService;
 
-    @Post("/{name}")
-    public String create(String name) {
-        return "create";
+    @Get("/instant/{pipelineId}")
+    @Produces(value = MediaType.TEXT_PLAIN)
+    public HttpResponse<String> instant(@PathVariable long pipelineId) {
+        return ok("ok!");
+    }
+
+    @Post("/")
+    public HttpResponse<?>  create(@Body @Valid PipelineSchedulerModel model) {
+        return ok("todo!");
     }
 
     @Get("/{id}")
@@ -36,29 +48,31 @@ public class SchedulerController {
         return "delete";
     }
 
-    @Put("/deactivate/{id}")
+    @Get("/deactivate/{id}")
     public String deactivate(int id) {
         // TODO: deactivate, stop if running job, inform workflow and clean next interval date
         return "";
     }
 
-    @Put("/stop/{id}")
+    @Get("/stop/{id}")
     public String stop(int id) {
         // TODO: stop running job, inform workflow and set next interval date
         return "";
     }
 
-    @Put("/complete/{id}")
-    public String complete(int id) {
+    @Get("/complete/{id}")
+    @Produces(value = MediaType.TEXT_PLAIN)
+    public HttpResponse<String>  complete(int id) {
         // TODO: complete running job and set next interval date
-        return "";
+        return ok("ok!");
     }
 
     @Post("/force/")
-    public String force() throws InterruptedException {
+    @Produces(value = MediaType.TEXT_PLAIN)
+    public HttpResponse<String> force() throws InterruptedException {
         int cores = 3; // Runtime.getRuntime().availableProcessors();
-        schedulerService.runAllAsync(cores);
-        return "force";
+        pipelineSchedulerService.runAllAsync(cores);
+        return ok("ok!");
     }
 
     @Get("/workflow/")
@@ -68,10 +82,11 @@ public class SchedulerController {
         return "get";
     }
 
-    // TODO:
-    // 1. service & repo for "jobs"
-    // 2. controller: insert/update -> next run date
-    // 3. controller: close job -> next run date | complete
+    @Get(uri="/ping")
+    @Produces(value = MediaType.TEXT_PLAIN)
+    public HttpResponse<String> ping() throws Exception {
+        return ok("pong!");
+    }
 
 }
 
