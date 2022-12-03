@@ -1,0 +1,8 @@
+// ! TODO: prepare starting request for full test for cron pipeline scheduling request
+
+POST http://example.com:8080/api/html/post HTTP/1.1
+Content-Type: application/json
+
+{ "key" : "value", "list": [1, 2, 3] }
+
+

@@ -1,0 +1,10 @@
+micronaut:
+  application:
+    name: workflow
+  server:
+    port: 9610
+
+netty:
+  default:
+    allocator:
+      max-order: 3

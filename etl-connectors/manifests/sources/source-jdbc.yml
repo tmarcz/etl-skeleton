@@ -1,0 +1,29 @@
+components:
+  schemas:
+    JdbcSourceModel:
+      id: JdbcSource
+      title: JDBC Source
+      description: JDBC Source Configuration
+      type: object
+      properties:
+        driver:
+          type: string
+          enum: ["oracle", "postgres", "mssql", "db2", "mongodb", "mariadb"]
+        url:
+          type: string
+        user:
+          type: string
+        password:
+          type: string
+        schema:
+          type: string
+        table:
+          type: string
+        fetchSize:
+          type: integer
+          minimum: 100
+          maximum: 10000000
+        mode:
+          type: string
+          enum: ["append", "overwrite"]
+      required: ["driver", "url", "user", "password", "schema", "table", "fetchSize", "mode"]

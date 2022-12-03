@@ -1,0 +1,55 @@
+{
+  "pipelineId": 25956,
+  "jobId": 127931,
+  "resource": {
+    "configuration": {
+      "spark.master": "local[1]",
+      "spark.appName": "772b74d9-b440-4411-85f1-e39d63afbee4"
+    }
+  },
+  "pipeline": [
+    {
+      "id": 1,
+      "name": "Source S3 Spark",
+      "url": ".jar",
+      "classPath": "com.example.S3SparkSource",
+      "methodName": "pass",
+      "configuration": {
+        "accessKey": "test",
+        "secretKey": "TeSt1234",
+        "endpoint": "http://127.0.0.1:9000",
+        "bucket": "test",
+        "fileRelativePath": "test.csv"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Transform CSV Spark",
+      "url": ".jar",
+      "classPath": "com.example.CsvSparkTransform",
+      "methodName": "read",
+      "configuration": {
+        "header": "true",
+        "delimiter": "|",
+        "inferSchema": "true"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Destination JDBC Spark",
+      "url": ".jar",
+      "classPath": "com.example.JdbcSparkDestination",
+      "methodName": "writeRows",
+      "configuration": {
+        "driver": "org.postgresql.Driver",
+        "url": "jdbc:postgresql://localhost:5432/example",
+        "user": "postgres",
+        "password": "test001",
+        "schema": "demo",
+        "table": "s3_csv_spark_test",
+        "fetchSize": "1000",
+        "mode": "append"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+components:
+  schemas:
+    S3SourceModel:
+      id: S3Source
+      title: S3 Source
+      description: S3 Source Configuration
+      type: object
+      properties:
+        accessKey:
+          type: string
+        secretKey:
+          type: string
+        endpoint:
+          type: string
+        bucket:
+          type: string
+        fileRelativePath:
+          type: string
+      required: ["accessKey", "secretKey", "endpoint", "bucket", "fileRelativePath"]

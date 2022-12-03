@@ -1,0 +1,10 @@
+{
+  "driver": {
+    "image": "driver-java-spark",
+    "address": "localhost:9601"
+  },
+  "spark": {
+    "image": "spark-master:3.3.0-hadoop3.3",
+    "address": "localhost:7077"
+  }
+}

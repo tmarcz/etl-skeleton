@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  description: Spark Java Driver Application
+  version: 1.0.0
+  title: Driver
+  license:
+    name: Apache-2.0
+    url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+tags:
+  - name: driver
+    description: Core driver controller
+
+paths:
+  /run:
+    post:
+      security: []
+      tags: [driver]
+      summary: Run application suite
+      operationId: run
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ApplicationSuiteModel"
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+  /ping:
+    get:
+      security: []
+      tags: [driver]
+      operationId: ping
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+
+components:
+  schemas:
+
+    ApplicationSuiteModel:
+      title: Application Suite
+      description: Details about resource setup and pipline's config & implementations
+      type: object
+      properties:
+        pipelineId:
+          type: integer
+        jobId:
+          type: integer
+        resource:
+          $ref: '#/components/schemas/ResourceModel'
+        pipeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineStepModel'
+      required: ["pipelineId", "jobId", "resource", "pipeline"]
+
+    ResourceModel:
+      type: object
+      properties:
+        configuration:
+          $ref: '#/components/schemas/MapModel'
+
+    PipelineStepModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        classPath:
+          type: string
+        methodName:
+          type: string
+        configuration:
+          $ref: '#/components/schemas/MapModel'
+      required: ["id", "name", "classPath", "methodName", "configuration"]
+
+    MapModel:
+      type: object
+      additionalProperties:
+        type: string
+

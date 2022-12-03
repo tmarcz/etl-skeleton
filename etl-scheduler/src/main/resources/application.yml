@@ -1,0 +1,10 @@
+micronaut:
+  application:
+    name: scheduler
+  server:
+    port: 8801
+
+netty:
+  default:
+    allocator:
+      max-order: 3

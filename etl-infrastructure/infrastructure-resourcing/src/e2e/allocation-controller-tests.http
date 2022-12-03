@@ -1,0 +1,43 @@
+// Request providing infrastructure setup
+
+POST http://localhost:9620/
+Content-Type: application/json
+
+{
+  "pipelineId": 25956,
+  "jobId": 127931,
+  "resources": [
+    {
+      "name": "driver",
+      "image": "driver-java-spark",
+      "cpus": 2,
+      "memory": "1024MB"
+    },
+    {
+      "name": "spark-master",
+      "image": "spark-master",
+      "cpus": 1,
+      "memory": "512MB"
+    },
+    {
+      "name": "spark-worker",
+      "image": "spark-worker",
+      "cpus": 4,
+      "memory": "1024MB"
+    }
+  ]
+}
+
+###
+
+// Ping request
+
+GET http://localhost:9620/ping
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 'pong!');
+%}
+
+###
+

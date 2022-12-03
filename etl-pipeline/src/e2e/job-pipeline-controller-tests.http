@@ -1,0 +1,13 @@
+// Ping request
+
+GET http://localhost:9610/job/ping
+
+> {%
+ client.assert(response.body, 'pong!');
+%}
+
+###
+
+
+
+###

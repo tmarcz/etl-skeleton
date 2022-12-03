@@ -1,0 +1,5 @@
+# integration driver tests
+- driver manifests describe drivers spec
+- connectors manifests describe connector specs
+- from connectors unit tests setup we can extract logic about
+- all connectors combinations (could be possible to check integration tests with previous versions stored in nexus or extract from git history)

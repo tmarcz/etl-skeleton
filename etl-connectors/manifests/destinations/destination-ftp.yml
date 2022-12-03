@@ -1,0 +1,15 @@
+components:
+  schemas:
+    FtpDestinationModel:
+      id: FtpDestination
+      title: FTP Destination
+      description: FTP Destination Configuration
+      type: object
+      properties:
+        user:
+          type: string
+        password:
+          type: string
+        path:
+          type: string
+      required: ["user", "password", "path"]

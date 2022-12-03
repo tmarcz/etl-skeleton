@@ -1,0 +1,19 @@
+components:
+  schemas:
+    S3DestinationModel:
+      id: S3Destination
+      title: S3 Destination
+      description: S3 Destination Configuration
+      type: object
+      properties:
+        accessKey:
+          type: string
+        secretKey:
+          type: string
+        endpoint:
+          type: string
+        bucket:
+          type: string
+        fileRelativePath:
+          type: string
+      required: ["accessKey", "secretKey", "endpoint", "bucket", "fileRelativePath"]

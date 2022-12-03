@@ -1,0 +1,31 @@
+{
+  "documentation": "https://etl-skeleton.localhost/integrations/sources/{{connector-name}}",
+  "specification": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/connector.schema.json",
+    "title": "{{connector name}} Source",
+    "description": "{{connector name}} Source Java Library",
+    "type": "object",
+    "connectors": [],
+    "properties": {
+      "data": [
+      ],
+      "methods": [
+        {
+          "read": {
+            "priority": 0,
+            "parameters": [],
+            "returns": "void"
+          }
+        },
+        {
+          "read": {
+            "priority": 0,
+            "parameters": [],
+            "returns": "void"
+          }
+        }
+      ]
+    }
+  }
+}
