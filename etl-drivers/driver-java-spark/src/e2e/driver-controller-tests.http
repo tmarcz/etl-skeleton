@@ -1,6 +1,6 @@
 // A basic request
 
-POST http://localhost:9601/run HTTP/1.1
+POST http://localhost:9660/run HTTP/1.1
 Content-Type: application/json
 
 {
@@ -16,7 +16,8 @@ Content-Type: application/json
     {
       "id": 1,
       "name": "Source S3 Spark",
-      "classPath": "com.example.S3SparkSource",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/source_java_s3_spark/source-java-s3-spark.jar",
+      "classPath": "com.example.connectors.source.java.jdbc.spark.S3SparkSource",
       "methodName": "pass",
       "configuration": {
         "accessKey": "test",
@@ -29,7 +30,8 @@ Content-Type: application/json
     {
       "id": 2,
       "name": "Transform CSV Spark",
-      "classPath": "com.example.CsvSparkTransform",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/transform_java_csv_spark/transform-java-csv-spark.jar",
+      "classPath": "com.example.connectors.transform.java.csv.spark.CsvSparkTransform",
       "methodName": "read",
       "configuration": {
         "header": "true",
@@ -40,7 +42,8 @@ Content-Type: application/json
     {
       "id": 3,
       "name": "Destination JDBC Spark",
-      "classPath": "com.example.JdbcSparkDestination",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/destination_java_jdbc_spark/destination-java-jdbc-spark.jar",
+      "classPath": "com.example.connectors.destination.java.jdbc.spark.JdbcSparkDestination",
       "methodName": "writeRows",
       "configuration": {
         "driver": "org.postgresql.Driver",
@@ -64,7 +67,7 @@ Content-Type: application/json
 
 // Ping request
 
-GET http://localhost:9601/ping
+GET http://localhost:9660/ping
 
 ###
 

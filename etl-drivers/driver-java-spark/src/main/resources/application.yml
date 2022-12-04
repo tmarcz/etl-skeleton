@@ -2,7 +2,7 @@ micronaut:
   application:
     name: demo
   server:
-    port: 9601
+    port: 9660
   cors:
     enabled: true
   router:

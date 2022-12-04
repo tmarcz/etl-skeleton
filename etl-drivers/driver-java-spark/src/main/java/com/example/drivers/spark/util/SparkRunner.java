@@ -1,29 +1,39 @@
 package com.example.drivers.spark.util;
 
-import com.example.drivers.spark.client.PipelineClient;
-import com.example.drivers.spark.model.ApplicationSuiteModel;
-import com.example.drivers.spark.model.PipelineStepModel;
+import com.example.commons.client.JobPipelineClient;
+import com.example.commons.model.ApplicationStepPipelineModel;
+import com.example.commons.model.ApplicationSuiteModel;
+import com.example.commons.model.ExecutionStepPipelineModel;
+//import com.example.drivers.spark.model.PipelineStepModel;
 import org.apache.spark.sql.SparkSession;
 
+import java.io.File;
 import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
 public class SparkRunner {
     private ApplicationSuiteModel applicationSuite;
-    private PipelineClient pipelineClient;
+    private JobPipelineClient pipelineClient;
+    private Long pipelineId;
 
     public static final String SPARK_MASTER = "spark.master";
     public static final String SPARK_APP_NAME = "spark.appName";
 
-    public SparkRunner(ApplicationSuiteModel applicationSuite, PipelineClient pipelineClient) {
+    public SparkRunner(ApplicationSuiteModel applicationSuite, JobPipelineClient pipelineClient) {
         this.applicationSuite = applicationSuite;
         this.pipelineClient = pipelineClient;
+        this.pipelineId = applicationSuite.getPipelineId();
     }
 
     public void run() {
+        pipelineClient.updateStatus(getStatus("Runner", "Preparing Spark"));
         SparkSession sparkSession = this.getSparkSession();
+        pipelineClient.updateStatus(getStatus("Runner", "Starting pipelines steps"));
         this.runSteps(sparkSession);
+        pipelineClient.updateStatus(getStatus("Runner", "Steps completed"));
     }
 
     private void runSteps(SparkSession sparkSession) {
@@ -33,10 +43,15 @@ public class SparkRunner {
         }
     }
 
-    private Object runStep(PipelineStepModel step, SparkSession sparkSession, Object previous) {
+    private Object runStep(ApplicationStepPipelineModel step, SparkSession sparkSession, Object previous) {
         Object result;
         try {
-            var clazz = Class.forName(step.getClassPath());
+            // TODO: files from Nexus or shared persistent storage (e.g. connected as docker Nexus volume)
+            var file = new File(step.getUrl());
+            var url = file.toURI().toURL();
+            var cl = new URLClassLoader(new URL[]{url});
+            var clazz = cl.loadClass(step.getClassPath());
+//            var clazz = Class.forName(step.getClassPath());
             var ctor = clazz.getConstructors()[0];
             var object = ctor.newInstance(sparkSession, step.getConfiguration(), previous);
             var method = Arrays.stream(clazz.getMethods())
@@ -66,5 +81,9 @@ public class SparkRunner {
                 .appName(appName)
                 .getOrCreate();
         return result;
+    }
+
+    private ExecutionStepPipelineModel getStatus(String title, String message){
+        return new ExecutionStepPipelineModel(1L,"Driver", title, message);
     }
 }

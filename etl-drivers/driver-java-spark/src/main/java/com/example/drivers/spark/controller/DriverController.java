@@ -1,7 +1,7 @@
 package com.example.drivers.spark.controller;
 
-import com.example.drivers.spark.client.PipelineClient;
-import com.example.drivers.spark.model.ApplicationSuiteModel;
+import com.example.commons.client.JobPipelineClient;
+import com.example.commons.model.ApplicationSuiteModel;
 import com.example.drivers.spark.service.PipelineExecutionService;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MediaType;
@@ -28,16 +28,11 @@ public class DriverController {
     @Inject
     private PipelineExecutionService pipelineExecutionService;
     @Inject
-    private PipelineClient pipelineClient;
+    private JobPipelineClient pipelineClient;
 
-//    public DriverController(PipelineExecutionService pipelineExecutionService, PipelineClient pipelineClient) {
-//        this.pipelineExecutionService = pipelineExecutionService;
-//        this.pipelineClient = pipelineClient;
-//    }
 
     /**
      * ping
-     *
      */
     @Operation(
             operationId = "ping",
@@ -46,20 +41,17 @@ public class DriverController {
                     @ApiResponse(responseCode = "400", description = "Bad Request")
             }
     )
-    @Get(uri="/ping")
+    @Get(uri = "/ping")
     @Produces(value = MediaType.APPLICATION_JSON)
     @Secured({SecurityRule.IS_ANONYMOUS})
     public HttpResponse<String> ping() {
-
-        var test = pipelineExecutionService.run(null);
-
-        return ok("pong!" + test);
+        return ok("pong!");
     }
 
     /**
      * Run application suite
      *
-     * @param applicationSuiteModel  (required)
+     * @param applicationSuiteModel (required)
      */
     @Operation(
             operationId = "run",
@@ -72,13 +64,11 @@ public class DriverController {
                     @Parameter(name = "applicationSuiteModel", required = true)
             }
     )
-    @Post(uri="/run")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Post(uri = "/run")
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(value = {"application/json"})
     @Secured({SecurityRule.IS_ANONYMOUS})
-    public HttpResponse<String> run(
-            @Body @NotNull @Valid ApplicationSuiteModel applicationSuite
-    ) {
+    public HttpResponse<String> run(@Body ApplicationSuiteModel applicationSuite) {
         var test = pipelineExecutionService.run(applicationSuite);
         return ok("RESULT =" + applicationSuite.getPipelineId());
     }
