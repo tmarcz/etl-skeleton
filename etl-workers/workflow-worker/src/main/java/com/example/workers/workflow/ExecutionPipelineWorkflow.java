@@ -14,7 +14,7 @@ public interface ExecutionPipelineWorkflow {
     // TODO: who (driver IP&Port) & what is executing the pipeline
 
     @WorkflowMethod
-    void open(int id);
+    void open(long id);
 
     @SignalMethod
     void start();

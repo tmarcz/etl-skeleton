@@ -1,0 +1,46 @@
+// Start pipline's job
+
+GET http://localhost:9609/start/1/2/3
+Content-Type: application/json
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 3);
+%}
+
+###
+
+// Stop pipline's job
+
+GET http://localhost:9609/stop/3
+Content-Type: application/json
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 3);
+%}
+
+###
+
+// Get pipline's job status
+
+GET http://localhost:9609/1
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 'pong!');
+%}
+
+###
+
+// Ping request
+
+GET http://localhost:9609/ping
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 'pong!');
+%}
+
+###
+

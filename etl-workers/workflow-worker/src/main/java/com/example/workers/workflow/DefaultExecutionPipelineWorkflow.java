@@ -18,10 +18,10 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
 
     private List<ExecutionStepPipelineModel> steps = new ArrayList<>();
     private boolean exit;
-    private int id;
+    private long id;
 
     @Override
-    public void open(int id) {
+    public void open(long id) {
         this.id = id;
         Workflow.await(() -> exit);
     }

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ExecutionStepPipelineModel {
-    private Long pipelineId;
+    private Long pipelineId; // TODO: -> it is job ID
     private String group;
     private String title;
     private String message;

@@ -10,7 +10,7 @@ import java.time.Instant;
 public class DefaultExecutionActivities implements ExecutionActivities {
 
     @Override
-    public String start(int id) {
+    public String start(long id) {
         // TODO:
         // 1. get full pipelines details from repo | PipelineRepository
         // 2. get exec engine implementations | ExecutionEngineService
@@ -46,12 +46,12 @@ public class DefaultExecutionActivities implements ExecutionActivities {
     }
 
     @Override
-    public String end(int id) {
+    public String end(long id) {
         return null;
     }
 
     @Override
-    public String terminate(int id) {
+    public String terminate(long id) {
         return null;
     }
 
