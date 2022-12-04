@@ -11,8 +11,8 @@
     {
       "id": 1,
       "name": "Source S3 Spark",
-      "url": ".jar",
-      "classPath": "com.example.S3SparkSource",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/source_java_s3_spark/source-java-s3-spark.jar",
+      "classPath": "com.example.connectors.source.java.jdbc.spark.S3SparkSource",
       "methodName": "pass",
       "configuration": {
         "accessKey": "test",
@@ -25,8 +25,8 @@
     {
       "id": 2,
       "name": "Transform CSV Spark",
-      "url": ".jar",
-      "classPath": "com.example.CsvSparkTransform",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/transform_java_csv_spark/transform-java-csv-spark.jar",
+      "classPath": "com.example.connectors.transform.java.csv.spark.CsvSparkTransform",
       "methodName": "read",
       "configuration": {
         "header": "true",
@@ -37,8 +37,8 @@
     {
       "id": 3,
       "name": "Destination JDBC Spark",
-      "url": ".jar",
-      "classPath": "com.example.JdbcSparkDestination",
+      "url": "D:/portfolio/etl-skeleton/out/artifacts/destination_java_jdbc_spark/destination-java-jdbc-spark.jar",
+      "classPath": "com.example.connectors.destination.java.jdbc.spark.JdbcSparkDestination",
       "methodName": "writeRows",
       "configuration": {
         "driver": "org.postgresql.Driver",

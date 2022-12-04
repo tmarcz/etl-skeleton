@@ -1,0 +1,16 @@
+// Preparing execution pipeline's implementation with resources
+
+GET http://localhost:9615/1
+
+###
+
+// Ping request
+
+GET http://localhost:9615/ping
+
+> {%
+ client.log(response.body);
+ client.assert(response.body, 'pong!');
+%}
+
+###

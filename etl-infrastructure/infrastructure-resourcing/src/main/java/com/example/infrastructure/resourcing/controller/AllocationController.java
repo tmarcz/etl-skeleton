@@ -48,7 +48,7 @@ public class AllocationController {
         var example = "example-response.json";
         var input = Thread.currentThread().getContextClassLoader().getResourceAsStream(example);
         var json = new ObjectMapper().readValue(input, JsonNode.class);
-        return HttpResponse.ok(json);
+        return ok(json);
     }
 
     @Get(uri="/ping")
