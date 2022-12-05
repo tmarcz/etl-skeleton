@@ -1,10 +1,13 @@
 package com.example.scheduler.service;
 
 import com.example.scheduler.client.JobPipelineClient;
+import com.example.scheduler.domain.JobPipelineScheduler;
 import com.example.scheduler.mapping.PipelineSchedulerMapper;
 import com.example.scheduler.model.PipelineSchedulerModel;
+import com.example.scheduler.repository.JobPipelineSchedulerRepository;
 import com.example.scheduler.repository.PipelineSchedulerRepository;
 import io.micronaut.context.annotation.Primary;
+import io.micronaut.transaction.interceptor.TransactionalInterceptor;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -20,6 +23,8 @@ import java.util.Optional;
 public class DefaultPipelineSchedulerService implements PipelineSchedulerService {
     @Inject
     private PipelineSchedulerRepository repository;
+    @Inject
+    private JobPipelineSchedulerRepository jobPipelineSchedulerRepository;
     @Inject
     private JobPipelineClient jobPipelineClient;
     @Inject
@@ -40,6 +45,11 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
         if (result) {
             var id = domain.get().getId();
             System.out.println("# RESULT Thread: " + threadId + "\t # Running job: " + id);
+
+            var job = new JobPipelineScheduler(null, id, null, null);
+            job = jobPipelineSchedulerRepository.save(job);
+
+            jobPipelineClient.start(domain.get().getPipelineId(), id, job.getId());
 
             domain.get().setRunning(true);
             entityManager.merge(domain.get());

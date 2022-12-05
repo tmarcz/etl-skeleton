@@ -9,13 +9,12 @@ import io.micronaut.http.client.annotation.Client;
 
 @Client
 public interface JobPipelineClient {
-    @Post(uri = "http://localhost:9610/job/start/{id}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse<ResponseExecutionStepPipelineModel> start(long id,  ExecutionStepPipelineModel executionStepPipeline);
+    @Get(uri = "http://localhost:9609/start/{pipelineId}/{schedulerId}/{jobId}", produces = MediaType.APPLICATION_JSON)
+    HttpResponse<?> start(@PathVariable long pipelineId, @PathVariable long schedulerId,@PathVariable long jobId);
 
-    @Post(uri = "http://localhost:9610/job/start/{id}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse<ResponseExecutionStepPipelineModel> stop(long id,  ExecutionStepPipelineModel executionStepPipeline);
+    @Get(uri = "http://localhost:9609/stop/{jobId}", produces = MediaType.APPLICATION_JSON)
+    HttpResponse<?> stop(@PathVariable long jobId);
 
-    @Get(uri = "http://localhost:9610/job/ping", produces = MediaType.TEXT_PLAIN)
-    @Header(name = "Accept", value = "text/plain")
+    @Get(uri = "http://localhost:9609/ping")
     HttpResponse<String> ping();
 }

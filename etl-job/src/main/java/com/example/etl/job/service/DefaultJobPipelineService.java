@@ -55,29 +55,16 @@ public class DefaultJobPipelineService implements JobPipelineService {
 
     @Override
     public long stop(long jobId) {
-        WorkflowOptions options =
-                WorkflowOptions.newBuilder()
-                        .setTaskQueue(TASK_QUEUE)
-                        .setWorkflowId(String.valueOf(jobId))
-                        .build();
-
-        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, options);
-        workflow.close();
+        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, String.valueOf(jobId));
+        workflow.end();
         return jobId;
     }
 
     @Override
     public ResponseExecutionStepPipelineModel updateStatus(ExecutionStepPipelineModel executionStepPipelineModel) {
         var id = executionStepPipelineModel.getPipelineId();
-        WorkflowOptions options =
-                WorkflowOptions.newBuilder()
-                        .setTaskQueue(TASK_QUEUE)
-                        .setWorkflowId(String.valueOf(id))
-                        .build();
-
-        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, options);
+        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, String.valueOf(id));
         workflow.update(executionStepPipelineModel);
-
         // TODO: potential option to stop the flow
         var result = new ResponseExecutionStepPipelineModel(true);
         return result;
@@ -85,15 +72,8 @@ public class DefaultJobPipelineService implements JobPipelineService {
 
     @Override
     public List<ExecutionStepPipelineModel> getStatus(long jobId) {
-        WorkflowOptions options =
-                WorkflowOptions.newBuilder()
-                        .setTaskQueue(TASK_QUEUE)
-                        .setWorkflowId(String.valueOf(jobId))
-                        .build();
-
-        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, options);
+        ExecutionPipelineWorkflow workflow = client.newWorkflowStub(ExecutionPipelineWorkflow.class, String.valueOf(jobId));
         var result = workflow.getSteps();
         return result;
     }
-
 }

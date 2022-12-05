@@ -48,7 +48,7 @@ public class JobPipelineController {
     }
 
     @Get(uri = "/ping")
-    @Produces(value = MediaType.TEXT_PLAIN)
+//    @Produces(value = MediaType.TEXT_PLAIN)
     public HttpResponse<String> ping() {
         return ok("pong!");
     }

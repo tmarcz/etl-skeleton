@@ -70,7 +70,7 @@ public class SchedulerController {
     @Post("/force/")
     @Produces(value = MediaType.TEXT_PLAIN)
     public HttpResponse<String> force() throws InterruptedException {
-        int cores = 3; // Runtime.getRuntime().availableProcessors();
+        int cores = 1; // Runtime.getRuntime().availableProcessors();
         pipelineSchedulerService.runAllAsync(cores);
         return ok("ok!");
     }
