@@ -53,6 +53,7 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
 
             domain.get().setRunning(true);
             entityManager.merge(domain.get());
+            jobPipelineSchedulerRepository.flush();
 
             System.out.println("# end #");
         }

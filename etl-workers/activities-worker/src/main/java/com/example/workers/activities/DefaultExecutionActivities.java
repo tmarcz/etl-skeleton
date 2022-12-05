@@ -1,5 +1,9 @@
 package com.example.workers.activities;
 
+import com.example.commons.client.DefaultJobPipelineClient;
+import com.example.commons.model.ExecutionStepPipelineModel;
+
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,7 +20,10 @@ public class DefaultExecutionActivities implements ExecutionActivities {
         // 2. get exec engine implementations | ExecutionEngineService
         // 3. get resource allocation | ResourceInfraService
         // 4. push app suite | DriverService
-        // // move to gRPC for optimization
+        // 5. call post execution services: billings, metrics, notifications...
+        // // TODO future move to gRPC for optimization
+
+//        DefaultJobPipelineClient.updateStatus(getStatus("Pipeline", "Getting pipeline definition"));
 
         System.out.println("1 start...");
 
@@ -30,7 +37,7 @@ public class DefaultExecutionActivities implements ExecutionActivities {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
         }
         System.out.println(Instant.now());
         System.out.println("# ping: " + ping);
@@ -59,5 +66,9 @@ public class DefaultExecutionActivities implements ExecutionActivities {
     public String ping() {
         System.out.println("ping...");
         return "pong";
+    }
+
+    private ExecutionStepPipelineModel getStatus(String title, String message) {
+        return new ExecutionStepPipelineModel(1L, "Activities", title, message);
     }
 }

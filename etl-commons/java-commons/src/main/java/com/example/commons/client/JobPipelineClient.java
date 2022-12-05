@@ -21,4 +21,5 @@ public interface JobPipelineClient {
 
     @Post(uri = "http://localhost:9610/job/", produces = MediaType.APPLICATION_JSON)
     HttpResponse<ResponseExecutionStepPipelineModel> updateStatus(ExecutionStepPipelineModel model);
+
 }

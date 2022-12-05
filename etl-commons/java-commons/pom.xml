@@ -132,6 +132,11 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>eu.dattri</groupId>
+            <artifactId>jsonbodyhandler</artifactId>
+            <version>0.4.6</version>
+        </dependency>
     </dependencies>
 
     <build>

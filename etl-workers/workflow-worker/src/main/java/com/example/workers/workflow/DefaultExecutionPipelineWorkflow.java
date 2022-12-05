@@ -1,5 +1,6 @@
 package com.example.workers.workflow;
 
+import com.example.commons.client.DefaultJobPipelineClient;
 import com.example.commons.model.ExecutionStepPipelineModel;
 import com.example.workers.activities.ExecutionActivities;
 import io.temporal.activity.ActivityOptions;
@@ -28,7 +29,7 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
 
     @Override
     public void start() {
-        System.out.println("start() | end");
+        steps.add(getStatus("Start", "Open activities"));
         activities.start(id);
     }
 
@@ -39,6 +40,7 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
 
     @Override
     public void end() {
+        steps.add(getStatus("End", "Close activities"));
         System.out.println();
         this.exit = true;
     }
@@ -58,5 +60,9 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
     public List<ExecutionStepPipelineModel> getSteps() {
         System.out.println("getSteps()");
         return steps;
+    }
+
+    private ExecutionStepPipelineModel getStatus(String title, String message){
+        return new ExecutionStepPipelineModel(1L,"Workflow", title, message);
     }
 }
