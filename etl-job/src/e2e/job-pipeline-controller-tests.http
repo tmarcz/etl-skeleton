@@ -28,7 +28,7 @@ POST http://localhost:9609/status
 Content-Type: application/json
 
 {
-  "pipelineId": 1,
+  "pipelineId": 3,
   "group": "group-test",
   "title": "title-test",
   "message": "message-test"

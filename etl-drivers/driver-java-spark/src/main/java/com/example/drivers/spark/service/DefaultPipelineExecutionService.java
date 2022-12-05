@@ -12,9 +12,8 @@ import jakarta.inject.Singleton;
 @Singleton
 public class DefaultPipelineExecutionService implements PipelineExecutionService {
 
-    // TODO: tests only
-    // @Inject
-    private JobPipelineClient pipelineClient = new JobPipelineClientMock();
+    @Inject
+    private JobPipelineClient pipelineClient;
 
     @Override
     public String run(ApplicationSuiteModel applicationSuiteModel) {

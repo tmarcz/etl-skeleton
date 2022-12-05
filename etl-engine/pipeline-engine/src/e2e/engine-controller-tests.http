@@ -1,6 +1,6 @@
 // Preparing execution pipeline's implementation with resources
 
-GET http://localhost:9615/1
+GET http://localhost:9615/3
 
 ###
 

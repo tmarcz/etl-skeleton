@@ -13,11 +13,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class SparkRunner {
     private ApplicationSuiteModel applicationSuite;
     private JobPipelineClient pipelineClient;
-    private Long pipelineId;
+    private Long jobId;
 
     public static final String SPARK_MASTER = "spark.master";
     public static final String SPARK_APP_NAME = "spark.appName";
@@ -25,7 +26,7 @@ public class SparkRunner {
     public SparkRunner(ApplicationSuiteModel applicationSuite, JobPipelineClient pipelineClient) {
         this.applicationSuite = applicationSuite;
         this.pipelineClient = pipelineClient;
-        this.pipelineId = applicationSuite.getPipelineId();
+        this.jobId = applicationSuite.getJobId();
     }
 
     public void run() {
@@ -39,6 +40,7 @@ public class SparkRunner {
     private void runSteps(SparkSession sparkSession) {
         Object previous = null;
         for (var step : applicationSuite.getPipeline()) {
+            pipelineClient.updateStatus(getStatus("Step", "Starting step: '" + step.getName() +"'"));
             previous = this.runStep(step, sparkSession, previous);
         }
     }
@@ -84,6 +86,6 @@ public class SparkRunner {
     }
 
     private ExecutionStepPipelineModel getStatus(String title, String message){
-        return new ExecutionStepPipelineModel(1L,"Driver", title, message);
+        return new ExecutionStepPipelineModel(jobId,"Driver", title, message);
     }
 }

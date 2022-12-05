@@ -1,6 +1,10 @@
 package com.example.workers.activities;
 
+import com.example.commons.client.DefaultDriverClient;
+import com.example.commons.client.DefaultEngineClient;
+import com.example.commons.client.DefaultInfrastructureClient;
 import com.example.commons.client.DefaultJobPipelineClient;
+import com.example.commons.model.ApplicationSuiteModel;
 import com.example.commons.model.ExecutionStepPipelineModel;
 
 
@@ -14,61 +18,67 @@ import java.time.Instant;
 public class DefaultExecutionActivities implements ExecutionActivities {
 
     @Override
-    public String start(long id) {
-        // TODO:
-        // 1. get full pipelines details from repo | PipelineRepository
-        // 2. get exec engine implementations | ExecutionEngineService
-        // 3. get resource allocation | ResourceInfraService
-        // 4. push app suite | DriverService
-        // 5. call post execution services: billings, metrics, notifications...
-        // // TODO future move to gRPC for optimization
-
-//        DefaultJobPipelineClient.updateStatus(getStatus("Pipeline", "Getting pipeline definition"));
-
-        System.out.println("1 start...");
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://localhost:8810/driver/ping/")).build();
-        System.out.println(Instant.now());
-        String ping = null;
+    public long pipelineStep(long id) {
         try {
-            ping = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-//            throw new RuntimeException(e);
+            // simulating long request
+            Thread.sleep(1000);
+        } catch (Exception ignored) {
         }
-        System.out.println(Instant.now());
-        System.out.println("# ping: " + ping);
-
-//        try {
-//            Thread.sleep(10000);
-//        } catch (Exception ignored) {
-//        }
-
-        System.out.println("2 start...");
-
-        return "start: " + id;
+        return id;
     }
 
     @Override
-    public String end(long id) {
+    public ApplicationSuiteModel engineStep(long pipelineId) {
+        ApplicationSuiteModel result = DefaultEngineClient.get(pipelineId);
+        return result;
+    }
+
+    @Override
+    public String resourceStep(long id) {
+        String pong = DefaultInfrastructureClient.fake(id);
+        return pong;
+    }
+
+    @Override
+    public String driverStep(ApplicationSuiteModel applicationSuiteModel) {
+        String res = DefaultDriverClient.run(applicationSuiteModel);
+        return res;
+    }
+
+    @Override
+    public String metricsStep(long jobId) {
         return null;
     }
 
     @Override
-    public String terminate(long id) {
+    public String billingStep(long jobId) {
         return null;
     }
 
     @Override
-    public String ping() {
-        System.out.println("ping...");
-        return "pong";
+    public String dataControlStep(long jobId) {
+        return null;
     }
 
-    private ExecutionStepPipelineModel getStatus(String title, String message) {
-        return new ExecutionStepPipelineModel(1L, "Activities", title, message);
+    @Override
+    public String notificationStep(long jobId) {
+        return null;
     }
+
+//    @Override
+//    public String end(long id) {
+//        return null;
+//    }
+//
+//    @Override
+//    public String terminate(long id) {
+//        return null;
+//    }
+//
+//    @Override
+//    public String ping() {
+//        System.out.println("ping...");
+//        return "pong";
+//    }
+
 }

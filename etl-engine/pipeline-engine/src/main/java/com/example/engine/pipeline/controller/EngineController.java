@@ -21,13 +21,14 @@ import static io.micronaut.http.HttpResponse.ok;
 public class EngineController {
     @Inject
     private ImplementationStepPipelineService implementationStepPipelineService;
-//    @Inject
+    @Inject
+    private JobPipelineClient jobPipelineClient;
     // TODO: quick test only
-    private JobPipelineClient jobPipelineClient = new JobPipelineClientMock();
+//    private JobPipelineClient jobPipelineClient = new JobPipelineClientMock();
 
     @Get(uri = "/{pipelineId}", produces = MediaType.APPLICATION_JSON)
     public HttpResponse<ApplicationSuiteModel> get(@PathVariable long pipelineId) throws IOException {
-        // TODO: flow mocks
+        // TODO: JobPipelineClient & statuses updates -> moving to something like log4j and use across the whole module
         jobPipelineClient.updateStatus(new ExecutionStepPipelineModel(pipelineId, "Engine", "Start", "Preparing pipeline's implementation with resources"));
         var example = "example-response.json";
         var input = Thread.currentThread().getContextClassLoader().getResourceAsStream(example);

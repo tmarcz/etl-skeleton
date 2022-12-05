@@ -3,6 +3,7 @@ package com.example.infrastructure.resourcing.controller;
 //import com.example.client.JobClient;
 //import com.example.client.JobPipelineClient;
 import com.example.commons.client.JobPipelineClient;
+import com.example.commons.model.ExecutionStepPipelineModel;
 import com.example.infrastructure.resourcing.service.ResourceService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +44,7 @@ public class AllocationController {
     }
 
     @Post(uri = "/", produces = MediaType.APPLICATION_JSON)
+    // TODO: accepted model
     public HttpResponse<?> post(@RequestBody JsonNode obj) throws IOException {
         // TODO: mocking flow
         var example = "example-response.json";
@@ -52,19 +54,15 @@ public class AllocationController {
     }
 
     @Get(uri="/ping")
-    @Produces(value = MediaType.TEXT_PLAIN)
-    public HttpResponse<String> ping() throws Exception {
+//    @Produces(value = MediaType.TEXT_PLAIN)
+    public HttpResponse<String> ping() {
+        return ok("pong!");
+    }
 
-        var test3 = jobPipelineClient.sendStatus(1243L);
-
-//        var test = JobClient.ping();
-
-//        var test2 = jobPipelineClient.ping().body();
-
-//        HttpRequest<Object> request = HttpRequest.GET("http://localhost:9610/ping");
-//        var test = client.toBlocking().exchange(request,  Argument.listOf(String.class));
-//        var ping = jobPipelineClient.ping();
-
+    @Get(uri = "/fake/{jobId}", produces = MediaType.APPLICATION_JSON)
+    public HttpResponse<String> fake(@PathVariable long jobId) {
+        jobPipelineClient.updateStatus(new ExecutionStepPipelineModel(jobId, "Infrastructure", "Start allocation", "Starting resources allocation"));
+        jobPipelineClient.updateStatus(new ExecutionStepPipelineModel(jobId, "Infrastructure", "End allocation", "Resources allocation complete"));
         return ok("pong!");
     }
 }

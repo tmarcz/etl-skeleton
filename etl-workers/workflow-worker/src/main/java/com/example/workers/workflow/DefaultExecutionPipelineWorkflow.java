@@ -1,6 +1,8 @@
 package com.example.workers.workflow;
 
+import com.example.commons.client.DefaultEngineClient;
 import com.example.commons.client.DefaultJobPipelineClient;
+import com.example.commons.model.ApplicationSuiteModel;
 import com.example.commons.model.ExecutionStepPipelineModel;
 import com.example.workers.activities.ExecutionActivities;
 import io.temporal.activity.ActivityOptions;
@@ -20,6 +22,10 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
     private List<ExecutionStepPipelineModel> steps = new ArrayList<>();
     private boolean exit;
     private long id;
+    private long pipeline = 0;
+    private ApplicationSuiteModel applicationSuite;
+    private String resources = null;
+    private String driver = null;
 
     @Override
     public void open(long id) {
@@ -29,9 +35,40 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
 
     @Override
     public void start() {
+        System.out.println("######### start ################## start ################## start ################## start #########");
+
         steps.add(getStatus("Start", "Open activities"));
-        activities.start(id);
+
+        if(pipeline == 0) {
+            update(getStatus("Pipeline", "Checking pipeline definition"));
+            pipeline = activities.pipelineStep(id);
+        }
+
+        if(applicationSuite == null) {
+//        if(pipeline > 0 && applicationSuite == null) {
+            update(getStatus("Engine", "Checking pipeline implementation & resourcing"));
+            applicationSuite = activities.engineStep(pipeline);
+        }
+
+        // TODO: extract from application suite resources for resource infra service
+        if(resources == null) {
+//        if(applicationSuite != null &&  resources == null) {
+            update(getStatus("Infrastructure", "Allocating infrastructure resources"));
+            resources = activities.resourceStep(pipeline);
+        }
+
+        // TODO: driver application result model
+        if(driver == null){
+            applicationSuite.setJobId(id); // TODO: mock
+            driver = activities.driverStep(applicationSuite);
+        }
+
+        // closing
+        exit = true;
+
+        System.out.println("######### end ################## end ################## end ################## end #########");
     }
+
 
     @Override
     public void close() {

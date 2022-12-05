@@ -69,7 +69,10 @@ public class DriverController {
     @Consumes(value = {"application/json"})
     @Secured({SecurityRule.IS_ANONYMOUS})
     public HttpResponse<String> run(@Body ApplicationSuiteModel applicationSuite) {
+
+
         var test = pipelineExecutionService.run(applicationSuite);
+
         return ok("RESULT =" + applicationSuite.getPipelineId());
     }
 
