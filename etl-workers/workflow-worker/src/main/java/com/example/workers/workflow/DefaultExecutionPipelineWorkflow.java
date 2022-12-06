@@ -6,11 +6,13 @@ import com.example.commons.model.ApplicationSuiteModel;
 import com.example.commons.model.ExecutionStepPipelineModel;
 import com.example.workers.activities.ExecutionActivities;
 import io.temporal.activity.ActivityOptions;
+import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkflow {
 
@@ -18,6 +20,10 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
             .setStartToCloseTimeout(Duration.ofSeconds(20))
             .build();
     private final ExecutionActivities activities = Workflow.newActivityStub(ExecutionActivities.class, options);
+
+    private final RetryOptions retryOptions =
+            RetryOptions.newBuilder().setMaximumAttempts(5).build();
+    private final Duration expiration = Duration.ofMinutes(1);
 
     private List<ExecutionStepPipelineModel> steps = new ArrayList<>();
     private boolean exit;
@@ -39,36 +45,24 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
 
         steps.add(getStatus("Start", "Open activities"));
 
-        if(pipeline == 0) {
-            update(getStatus("Pipeline", "Checking pipeline definition"));
-            pipeline = activities.pipelineStep(id);
-        }
-
-        if(applicationSuite == null) {
-//        if(pipeline > 0 && applicationSuite == null) {
-            update(getStatus("Engine", "Checking pipeline implementation & resourcing"));
-            applicationSuite = activities.engineStep(pipeline);
-        }
-
-        // TODO: extract from application suite resources for resource infra service
-        if(resources == null) {
-//        if(applicationSuite != null &&  resources == null) {
-            update(getStatus("Infrastructure", "Allocating infrastructure resources"));
-            resources = activities.resourceStep(pipeline);
-        }
-
-        // TODO: driver application result model
-        if(driver == null){
-            applicationSuite.setJobId(id); // TODO: mock
-            driver = activities.driverStep(applicationSuite);
-        }
-
-        // closing
-        exit = true;
+        Workflow.retry(
+                retryOptions,
+                Optional.of(expiration),
+                () -> {
+                    update(getStatus("Pipeline", "Checking pipeline definition"));
+                    pipeline = activities.pipelineStep(id);
+                    update(getStatus("Engine", "Checking pipeline implementation & resourcing"));
+                    applicationSuite = activities.engineStep(pipeline);
+                    update(getStatus("Infrastructure", "Allocating infrastructure resources"));
+                    resources = activities.resourceStep(pipeline);
+                    update(getStatus("Driver", "Executing application"));
+                    applicationSuite.setJobId(id); // TODO: mock
+                    driver = activities.driverStep(applicationSuite);
+                    exit = true;
+                });
 
         System.out.println("######### end ################## end ################## end ################## end #########");
     }
-
 
     @Override
     public void close() {

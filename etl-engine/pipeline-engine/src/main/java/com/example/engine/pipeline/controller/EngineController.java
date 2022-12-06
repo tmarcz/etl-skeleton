@@ -1,5 +1,6 @@
 package com.example.engine.pipeline.controller;
 
+import com.example.commons.client.DefaultJobPipelineClient;
 import com.example.commons.client.JobPipelineClient;
 import com.example.commons.mock.JobPipelineClientMock;
 import com.example.commons.model.ApplicationSuiteModel;
