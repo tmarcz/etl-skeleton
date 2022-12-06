@@ -58,6 +58,7 @@ public class DefaultExecutionPipelineWorkflow implements ExecutionPipelineWorkfl
                     update(getStatus("Driver", "Executing application"));
                     applicationSuite.setJobId(id); // TODO: mock
                     driver = activities.driverStep(applicationSuite);
+                    update(getStatus("Workflow", "End activities"));
                     exit = true;
                 });
 
