@@ -1,6 +1,6 @@
 package com.example.scheduler;
 
-import com.example.scheduler.domain.PipelineScheduler;
+import com.example.scheduler.domain.Scheduler;
 import com.example.scheduler.domain.SchedulerType;
 import com.example.scheduler.repository.PipelineSchedulerRepository;
 import io.micronaut.context.annotation.Requires;
@@ -11,16 +11,18 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.persistence.TemporalType;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalField;
 import java.util.List;
 
 @Singleton
-@Requires(notEnv = "mock")
+@Requires(notEnv = "test")
 @Slf4j
-public class DataInitializer implements ApplicationEventListener<ServerStartupEvent> {
+public class DataInitializer  implements ApplicationEventListener<ServerStartupEvent> {
     @Inject
     private PipelineSchedulerRepository pipelineSchedulerRepository;
     @Inject
@@ -32,7 +34,7 @@ public class DataInitializer implements ApplicationEventListener<ServerStartupEv
 
         var data = List.of(
                 // next run close to current date time
-                PipelineScheduler.builder()
+                Scheduler.builder()
                         .pipelineId(1L)
                         .schedulerType(SchedulerType.CRON)
                         .cron("0/10 0 0 ? * * *") // every 10 seconds
@@ -42,7 +44,7 @@ public class DataInitializer implements ApplicationEventListener<ServerStartupEv
                         .deleted(false).build(),
 
                 // next run is 10 days old
-                PipelineScheduler.builder()
+                Scheduler.builder()
                         .pipelineId(1L)
                         .schedulerType(SchedulerType.CRON)
                         .cron("0/10 0 0 ? * * *") // every 10 seconds
@@ -52,7 +54,7 @@ public class DataInitializer implements ApplicationEventListener<ServerStartupEv
                         .deleted(false).build(),
 
                 // next run in 5 minutes
-                PipelineScheduler.builder()
+                Scheduler.builder()
                         .pipelineId(1L)
                         .schedulerType(SchedulerType.CRON)
                         .cron("0/10 0 0 ? * * *") // every 10 seconds
@@ -62,7 +64,7 @@ public class DataInitializer implements ApplicationEventListener<ServerStartupEv
                         .deleted(false).build(),
 
                 // next run in 1 day
-                PipelineScheduler.builder()
+                Scheduler.builder()
                         .pipelineId(1L)
                         .schedulerType(SchedulerType.CRON)
                         .cron("0/10 0 0 ? * * *") // every 10 seconds

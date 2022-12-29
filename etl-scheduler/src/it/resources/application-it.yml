@@ -6,11 +6,12 @@ micronaut:
 
 datasources:
   default:
-    url: jdbc:postgresql://localhost:5432/example
+    url: jdbc:postgresql://localhost:55100/example
     driverClassName: org.postgresql.Driver
     username: postgres
     password: test001
-#    schema-generate: CREATE_DROP
+    schema-generate: CREATE_DROP
+#    schema-generate: CREATE # CREATE_DROP
     dialect: POSTGRES
     schema: demo
 #    schema: demo-scheduler
@@ -22,6 +23,6 @@ jpa:
     properties:
       hibernate:
         hbm2ddl:
-#          auto: update
+          auto: update
 #          auto: validate
         show_sql: true
