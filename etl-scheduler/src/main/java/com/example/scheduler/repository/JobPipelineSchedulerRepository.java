@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface JobPipelineSchedulerRepository  extends JpaRepository<JobRun, Long> {
     List<JobRun> findAllBySchedulerId(Long id);
+    JobRun findBySchedulerIdAndEndDateIsNull(Long schedulerId);
 }

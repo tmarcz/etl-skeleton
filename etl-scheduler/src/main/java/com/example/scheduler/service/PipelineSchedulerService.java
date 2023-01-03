@@ -1,5 +1,6 @@
 package com.example.scheduler.service;
 
+import com.example.scheduler.model.JobPipelineSchedulerModel;
 import com.example.scheduler.model.PipelineSchedulerModel;
 
 import java.time.LocalDateTime;
@@ -33,4 +34,6 @@ public interface PipelineSchedulerService {
     PipelineSchedulerModel instantRun(long pipelineId);
 
     LocalDateTime getNextCronExecutionDateTimeFromNow(String cron);
+
+    PipelineSchedulerModel complete(Long id);
 }

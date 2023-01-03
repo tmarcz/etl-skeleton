@@ -10,4 +10,6 @@ public interface JobService {
     Optional<JobPipelineSchedulerModel> getById(Long id);
     List<JobPipelineSchedulerModel> getAllBySchedulerId(Long id);
     List<JobPipelineSchedulerModel> getAll();
+
+    JobPipelineSchedulerModel complete(Long id);
 }

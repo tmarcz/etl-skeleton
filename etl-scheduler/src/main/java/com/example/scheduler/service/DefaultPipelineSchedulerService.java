@@ -158,6 +158,33 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     }
 
     @Override
+    @Transactional
+    public PipelineSchedulerModel complete(Long id) {
+        var domain = repository.findById(id).get();
+        var job = jobPipelineSchedulerRepository.findBySchedulerIdAndEndDateIsNull(domain.getId());
+        var now = LocalDateTime.now();
+        job.setEndDate(now);
+        job = jobPipelineSchedulerRepository.saveAndFlush(job);
+
+        if (domain.getSchedulerType() == SchedulerType.CRON) {
+            var nextExecution = getNextCronExecutionDateTimeFromNow(domain.getCron());
+            domain.setNextRunDate(nextExecution);
+        } else if (domain.getSchedulerType() == SchedulerType.INSTANT) {
+            domain.setActive(false);
+            domain.setLastRunDate(domain.getNextRunDate());
+            domain.setNextRunDate(null);
+        } else {
+            // TODO: to implement calendar scheduling
+            throw new RuntimeException("TODO: not yet implemented!");
+        }
+        domain = repository.saveAndFlush(domain);
+
+        var result = mapper.toModel(domain);
+        result.setRuns(List.of(jobMapper.toModel(job)));
+        return result;
+    }
+
+    @Override
     public PipelineSchedulerModel create(PipelineSchedulerModel model) {
         PipelineSchedulerModel result;
         if (model.getSchedulerType() == SchedulerTypeModel.CRON) {

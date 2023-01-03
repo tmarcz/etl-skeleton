@@ -40,4 +40,9 @@ public class DefaultJobService implements JobService {
         var result = mapper.toModel(domains);
         return result;
     }
+
+    @Override
+    public JobPipelineSchedulerModel complete(Long id) {
+        return null;
+    }
 }

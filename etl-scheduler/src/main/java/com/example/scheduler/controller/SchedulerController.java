@@ -34,13 +34,13 @@ public class SchedulerController {
     }
 
     @Post("/")
-    public HttpResponse<PipelineSchedulerModel>  create(@Body @Valid PipelineSchedulerModel model) {
-       var result = pipelineSchedulerService.create(model);
-       return ok(result);
+    public HttpResponse<PipelineSchedulerModel> create(@Body @Valid PipelineSchedulerModel model) {
+        var result = pipelineSchedulerService.create(model);
+        return ok(result);
     }
 
     @Put("/")
-    public HttpResponse<PipelineSchedulerModel>  update(@Body @Valid PipelineSchedulerModel model) {
+    public HttpResponse<PipelineSchedulerModel> update(@Body @Valid PipelineSchedulerModel model) {
         var result = pipelineSchedulerService.update(model);
         return ok(result);
     }
@@ -52,9 +52,8 @@ public class SchedulerController {
         return ok(result);
     }
 
-    // TODO: control plane activities only for "/force/*" ?
     @Get("/")
-    public HttpResponse<List<PipelineSchedulerModel>>  getAll() {
+    public HttpResponse<List<PipelineSchedulerModel>> getAll() {
         var result = pipelineSchedulerService.getAll();
         return ok(result);
     }
@@ -85,51 +84,29 @@ public class SchedulerController {
         return ok(result);
     }
 
-
+    @Post("/complete/{id}")
+    public HttpResponse<PipelineSchedulerModel> complete(@PathVariable long id) {
+        var result = pipelineSchedulerService.complete(id);
+        return ok(result);
+    }
 
     @Get("/deactivate/{id}")
-    public String deactivate(int id) {
+    public HttpResponse<PipelineSchedulerModel> deactivate(int id) {
         // TODO: deactivate, stop if running job, inform workflow and clean next interval date
-        return "";
+        throw new RuntimeException("TODO: not yet implemented!");
     }
 
-    // TODO: stop job
-//    @Get("/stop/{id}")
-//    public String stop(int id) {
-//        // TODO: stop running job, inform workflow and set next interval date
-//        return "";
-//    }
-
-    @Get("/complete/{id}")
-    @Produces(value = MediaType.TEXT_PLAIN)
-    public HttpResponse<String>  complete(int id) {
-        // TODO: complete running job and set next interval date
-        return ok("ok!");
+    @Get("/stop/{id}")
+    public HttpResponse<PipelineSchedulerModel>  stop(int id) {
+        // TODO: stop running job, inform workflow and set next interval date
+        throw new RuntimeException("TODO: not yet implemented!");
     }
 
-    @Post("/force/")
-    @Produces(value = MediaType.TEXT_PLAIN)
-    public HttpResponse<String> force() throws InterruptedException {
-        int cores = 1; // Runtime.getRuntime().availableProcessors();
-        pipelineSchedulerService.runAllAsync(cores);
-        return ok("ok!");
-    }
-
-    @Get(uri="/ping")
+    @Get(uri = "/ping")
     @Produces(value = MediaType.TEXT_PLAIN)
     public HttpResponse<String> ping() throws Exception {
         return ok("pong!");
     }
 
-
-
-
-
-    // TODO: to delete: ?
-    @Get("/instant/{pipelineId}")
-    public HttpResponse<?> instant(@PathVariable long pipelineId) {
-//        var result = pipelineSchedulerService.createInstant(pipelineId);
-        return ok("ok!");
-    }
 }
 

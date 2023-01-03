@@ -20,7 +20,8 @@ import java.util.Date;
         name = "jobs_runs",
         indexes = {
                 @Index(name = "scheduler_id_index", columnList = "scheduler_id"),
-                @Index(name = "pipeline_id_jobs_runs_index", columnList = "pipeline_id")}
+                @Index(name = "pipeline_id_jobs_runs_index", columnList = "pipeline_id"),
+                @Index(name = "scheduler_id_and_end_date_jobs_index", columnList = "scheduler_id, endDate", unique = true)}
                 )
 public class JobRun {
     @Id
