@@ -608,6 +608,44 @@ public class SchedulerControllerIntegrationTest {
         Assertions.assertTrue(now.isBefore(createdSchedulerResult.getCreatedDate()));
     }
 
+    @Test
+    @DisplayName("Should complete instant scheduler job")
+    void testCompleteInstantJob() {
+        // given
+        var now = LocalDateTime.now();
+        var scheduler = PipelineSchedulerModel.builder()
+                .pipelineId(1L)
+                .schedulerType(SchedulerTypeModel.INSTANT)
+                .active(true)
+                .deleted(false)
+                .build();
+
+        // when
+        var createdSchedulerResult = client.toBlocking().retrieve(
+                HttpRequest.POST("/", scheduler),
+                PipelineSchedulerModel.class);
+
+        var runningSchedulerResult = client.toBlocking().retrieve(
+                HttpRequest.GET("/force/runFirst"),
+                PipelineSchedulerModel.class);
+
+        var completedJobResult = client.toBlocking().retrieve(
+                HttpRequest.POST("/complete/" + createdSchedulerResult.getId(), null),
+                PipelineSchedulerModel.class);
+
+        // then
+        var jobActual = completedJobResult.getRuns().get(0);
+        var jobExpected = runningSchedulerResult.getRuns().get(0);
+
+        Assertions.assertEquals(1, completedJobResult.getRuns().size());
+        Assertions.assertEquals(jobExpected.getId(), jobActual.getId());
+        Assertions.assertEquals(scheduler.getPipelineId(), jobActual.getPipelineId());
+        Assertions.assertEquals(createdSchedulerResult.getId(), jobActual.getSchedulerId());
+        Assertions.assertEquals(createdSchedulerResult.getId(), completedJobResult.getId());
+        Assertions.assertTrue(jobActual.getStartDate().isBefore(jobActual.getEndDate()));
+        Assertions.assertTrue(now.isBefore(createdSchedulerResult.getCreatedDate()));
+    }
+
     private Scheduler buildScheduler(long pipelineId, LocalDateTime nextRunDate, SchedulerType schedulerType, String cron, boolean active, boolean running, boolean deleted){
         var result = Scheduler.builder()
                         .pipelineId(pipelineId)
