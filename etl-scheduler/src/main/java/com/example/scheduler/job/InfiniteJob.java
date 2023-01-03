@@ -1,6 +1,7 @@
 package com.example.scheduler.job;
 
 //import com.example.scheduler.service.SchedulerService;
+import com.example.scheduler.service.PipelineSchedulerService;
 import io.micronaut.scheduling.annotation.Scheduled;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -13,15 +14,28 @@ import java.util.Date;
 @Singleton
 public class InfiniteJob {
     private static final Logger LOG = LoggerFactory.getLogger(InfiniteJob.class);
+    public static final int RATE_MILLISECONDS = 100;
+    private boolean active = true;
 
-//    @Inject
-//    private SchedulerService schedulerService;
+    @Inject
+    private PipelineSchedulerService pipelineSchedulerService;
 
-    @Scheduled(fixedRate = "5s")
+    @Scheduled(fixedRate = RATE_MILLISECONDS + "ms")
     void execute() throws InterruptedException {
-        System.out.println("Simple Job every 5 seconds:" + new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date()));
+        if (!active) return;
 
-//        int cores = Runtime.getRuntime().availableProcessors();
-//        schedulerService.runAllAsync(cores);
+        pipelineSchedulerService.runFirst();
+    }
+
+    public void forceExecute() {
+        pipelineSchedulerService.runFirst();
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -1,5 +1,9 @@
 package com.example.scheduler.service;
 
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
+import com.cronutils.parser.CronParser;
 import com.example.scheduler.client.JobPipelineClient;
 import com.example.scheduler.domain.JobRun;
 import com.example.scheduler.domain.Scheduler;
@@ -7,6 +11,7 @@ import com.example.scheduler.domain.SchedulerType;
 import com.example.scheduler.mapping.JobPipelineSchedulerMapper;
 import com.example.scheduler.mapping.PipelineSchedulerMapper;
 import com.example.scheduler.model.PipelineSchedulerModel;
+import com.example.scheduler.model.SchedulerTypeModel;
 import com.example.scheduler.repository.JobPipelineSchedulerRepository;
 import com.example.scheduler.repository.PipelineSchedulerRepository;
 import io.micronaut.context.annotation.Primary;
@@ -17,12 +22,20 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static com.cronutils.model.CronType.QUARTZ;
 
 @Primary
 @Singleton
@@ -42,10 +55,6 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     @Transactional
     public JobRun run(Scheduler scheduler) {
         try {
-            var threadId = Thread.currentThread().getId();
-            System.out.println("# CHECK Thread: " + threadId);
-            System.out.println("# RESULT Thread: " + threadId + "\t # Running job: " + scheduler.getId());
-
             var job = new JobRun(null, scheduler, scheduler.getPipelineId(), LocalDateTime.now(), null);
             job = jobPipelineSchedulerRepository.save(job);
 
@@ -55,7 +64,6 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
             entityManager.merge(scheduler);
             jobPipelineSchedulerRepository.flush();
 
-            System.out.println("# end #");
             return job;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -68,9 +76,6 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
         Optional<PipelineSchedulerModel> result = Optional.empty();
         var currentTimestamp = LocalDateTime.now();
         var domain = repository.findFirstJobToRunForUpdate(currentTimestamp);
-
-        var threadId = Thread.currentThread().getId();
-        System.out.println("# CHECK Thread: " + threadId);
 
         if (domain.isPresent()) {
             var job = run(domain.get());
@@ -96,17 +101,23 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     }
 
     @Override
-    public void runAllAsync(int threadCount) {
-        try {
-            Thread[] threads = new Thread[threadCount];
-            Arrays.setAll(threads, i -> new Thread(this::runAll));
-            Arrays.stream(threads).forEach(Thread::start);
-            for (int i = 0; i < threadCount; i++) {
-                threads[i].join();
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    public List<PipelineSchedulerModel> runAllAsync(int threadCount) {
+        var runAllFutures = IntStream.range(0, threadCount)
+                .mapToObj(p -> CompletableFuture.supplyAsync(this::runAll))
+                .collect(Collectors.toList());
+
+        var allFutures = CompletableFuture.allOf(runAllFutures.toArray(new CompletableFuture[0]));
+
+        var allRunAllFuture = allFutures.thenApply(v ->
+                runAllFutures.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList()));
+
+        var result = allRunAllFuture.join().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        return result;
     }
 
     @Override
@@ -136,7 +147,53 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     }
 
     @Override
+    public LocalDateTime getNextCronExecutionDateTimeFromNow(String expression) {
+        var cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
+        var parser = new CronParser(cronDefinition);
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var executionTime = ExecutionTime.forCron(parser.parse(expression));
+        var nextExecution = executionTime.nextExecution(now);
+        var result = nextExecution.map(ZonedDateTime::toLocalDateTime).orElse(null);
+        return result;
+    }
+
+    @Override
     public PipelineSchedulerModel create(PipelineSchedulerModel model) {
+        PipelineSchedulerModel result;
+        if (model.getSchedulerType() == SchedulerTypeModel.CRON) {
+            result = createCron(model);
+        } else if (model.getSchedulerType() == SchedulerTypeModel.INSTANT) {
+            result = createInstant(model);
+        } else {
+            result = createCalendar(model);
+        }
+        return result;
+    }
+
+    @Override
+    public PipelineSchedulerModel createCron(PipelineSchedulerModel model) {
+        var domain = mapper.toDomain(model);
+        var nextExecution = getNextCronExecutionDateTimeFromNow(domain.getCron());
+        domain.setNextRunDate(nextExecution);
+        domain = repository.saveAndFlush(domain);
+        domain = repository.findById(domain.getId()).get();
+        var result = mapper.toModel(domain);
+        return result;
+    }
+
+    @Override
+    public PipelineSchedulerModel createInstant(PipelineSchedulerModel model) {
+        var domain = mapper.toDomain(model);
+        domain.setNextRunDate(LocalDateTime.now());
+        domain = repository.saveAndFlush(domain);
+        domain = repository.findById(domain.getId()).get();
+        var result = mapper.toModel(domain);
+        return result;
+    }
+
+    @Override
+    public PipelineSchedulerModel createCalendar(PipelineSchedulerModel model) {
+        // TODO: to implement calendar logic
         var domain = mapper.toDomain(model);
         domain = repository.saveAndFlush(domain);
         domain = repository.findById(domain.getId()).get();
@@ -145,21 +202,7 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     }
 
     @Override
-    public PipelineSchedulerModel createCron(PipelineSchedulerModel model) {
-        return null;
-    }
-
-    @Override
-    public PipelineSchedulerModel createInstant(PipelineSchedulerModel model) {
-        return null;
-    }
-
-    @Override
-    public PipelineSchedulerModel createCalendar(PipelineSchedulerModel model) {
-        return null;
-    }
-
-    @Override
+    @Transactional
     public PipelineSchedulerModel update(PipelineSchedulerModel model) {
         var domain = mapper.toDomain(model);
         domain = repository.update(domain);
@@ -168,12 +211,18 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
     }
 
     @Override
+    @Transactional
     public PipelineSchedulerModel updateCron(PipelineSchedulerModel model) {
+        // TODO: to implement cron logic
+        // update next run if cron changed
         return null;
     }
 
     @Override
+    @Transactional
     public PipelineSchedulerModel updateCalendar(PipelineSchedulerModel model) {
+        // TODO: to implement calendar logic
+        // update next run if calendar changed
         return null;
     }
 
@@ -198,5 +247,6 @@ public class DefaultPipelineSchedulerService implements PipelineSchedulerService
         var result = mapper.toModel(domain.get());
         return result;
     }
+
 
 }

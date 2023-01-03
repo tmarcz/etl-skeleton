@@ -79,10 +79,10 @@ public class SchedulerController {
     }
 
     @Get("/force/runAllAsync/{cores}")
-    public HttpResponse<Boolean> forceRunAllAsync(@PathVariable int cores) {
+    public HttpResponse<List<PipelineSchedulerModel>> forceRunAllAsync(@PathVariable int cores) {
         cores = cores == 0 ? Runtime.getRuntime().availableProcessors() : cores;
-        pipelineSchedulerService.runAllAsync(cores);
-        return ok(true);
+        var result = pipelineSchedulerService.runAllAsync(cores);
+        return ok(result);
     }
 
 

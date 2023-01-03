@@ -4,7 +4,9 @@ import com.example.scheduler.client.JobPipelineClient;
 import com.example.scheduler.domain.JobRun;
 import com.example.scheduler.domain.Scheduler;
 import com.example.scheduler.domain.SchedulerType;
+import com.example.scheduler.job.InfiniteJob;
 import com.example.scheduler.mapping.PipelineSchedulerMapper;
+import com.example.scheduler.model.JobPipelineSchedulerModel;
 import com.example.scheduler.model.PipelineSchedulerModel;
 import com.example.scheduler.model.SchedulerTypeModel;
 import com.example.scheduler.repository.JobPipelineSchedulerRepository;
@@ -26,6 +28,7 @@ import jakarta.inject.Inject;
 import org.javatuples.Quintet;
 import org.javatuples.Sextet;
 import org.javatuples.Triplet;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +47,7 @@ import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -82,11 +86,25 @@ public class SchedulerControllerIntegrationTest {
     private PipelineSchedulerRepository pipelineSchedulerRepository;
     @Inject
     private JobPipelineSchedulerRepository jobPipelineSchedulerRepository;
+    @Inject
+    private InfiniteJob infiniteJob;
 
-    @BeforeEach
-    void init() {
+    @BeforeAll
+    void beforeAll(){
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
         jobPipelineSchedulerRepository.deleteAll();
         pipelineSchedulerRepository.deleteAll();
+
+        infiniteJob.setActive(false);
+    }
+
+    @BeforeEach
+    void beforeEach() {
+        jobPipelineSchedulerRepository.deleteAll();
+        pipelineSchedulerRepository.deleteAll();
+
+        infiniteJob.setActive(false);
     }
 
     @Test
@@ -99,13 +117,13 @@ public class SchedulerControllerIntegrationTest {
     @DisplayName("Should create scheduler")
     void testCreateScheduler() {
         // given
+        var now = LocalDateTime.now();
         var scheduler = PipelineSchedulerModel.builder()
                 .pipelineId(1L)
-                .schedulerType(SchedulerTypeModel.CRON)
-                .cron("0/10 0 0 ? * * *")
+                .schedulerType(SchedulerTypeModel.INSTANT)
+                .cron("*/1 * * * * ?") // every 1 second
                 .active(true)
                 .running(false)
-                .nextRunDate(LocalDateTime.now())
                 .deleted(false)
                 .build();
 
@@ -116,9 +134,12 @@ public class SchedulerControllerIntegrationTest {
 
         // then
         scheduler.setId(result.getId());
+        scheduler.setNextRunDate(result.getNextRunDate());
         scheduler.setCreatedDate(result.getCreatedDate());
         Assertions.assertNotNull(result.getId());
         Assertions.assertNotNull(result.getCreatedDate());
+        Assertions.assertTrue(now.isBefore(result.getNextRunDate()));
+        Assertions.assertTrue(now.isBefore(result.getCreatedDate()));
         Assertions.assertEquals(scheduler, result);
     }
 
@@ -126,13 +147,12 @@ public class SchedulerControllerIntegrationTest {
     @DisplayName("Should create instant scheduler and run job")
     void testCreateInstantSchedulerAndRunJob() {
         // given
+        infiniteJob.setActive(true);
+        var now = LocalDateTime.now(ZoneOffset.UTC);
         var scheduler = PipelineSchedulerModel.builder()
                 .pipelineId(1L)
-                .schedulerType(SchedulerTypeModel.CRON)
-                .cron("0/10 0 0 ? * * *")
+                .schedulerType(SchedulerTypeModel.INSTANT)
                 .active(true)
-                .running(false)
-                .nextRunDate(LocalDateTime.now())
                 .deleted(false)
                 .build();
 
@@ -143,12 +163,53 @@ public class SchedulerControllerIntegrationTest {
 
         // then
         scheduler.setId(result.getId());
+        scheduler.setNextRunDate(result.getNextRunDate());
         scheduler.setCreatedDate(result.getCreatedDate());
         Assertions.assertNotNull(result.getId());
         Assertions.assertNotNull(result.getCreatedDate());
         Assertions.assertEquals(scheduler, result);
+        Assertions.assertTrue(now.isBefore(result.getNextRunDate()));
+        Assertions.assertTrue(now.isBefore(result.getCreatedDate()));
     }
 
+    @Test
+    @DisplayName("Should create cron scheduler and run job")
+    void testCreateCronSchedulerAndRunJob() throws InterruptedException {
+        // given
+        infiniteJob.setActive(true);
+        var jobIntervalMilliseconds = InfiniteJob.RATE_MILLISECONDS;
+        var schedulerIntervalEvery1SecondInMilliseconds = 1000;
+        var waitingIntervalMilliseconds = jobIntervalMilliseconds + schedulerIntervalEvery1SecondInMilliseconds;
+
+        var scheduler = PipelineSchedulerModel.builder()
+                .pipelineId(1L)
+                .schedulerType(SchedulerTypeModel.CRON)
+                .cron("*/1 * * * * ?") // every 1 second
+                .active(true)
+                .running(false)
+                .deleted(false)
+                .build();
+
+        // when
+        var createdSchedulerResult = client.toBlocking().retrieve(
+                HttpRequest.POST("/", scheduler),
+                PipelineSchedulerModel.class);
+
+        Thread.sleep(waitingIntervalMilliseconds);
+
+        var allJobsResult = client.toBlocking().retrieve(
+                HttpRequest.GET("/job/getAll"),
+                JobPipelineSchedulerModel[].class);
+
+        var allSchedulerResult = client.toBlocking().retrieve(
+                HttpRequest.GET("/job/getAllBySchedulerId/" + createdSchedulerResult.getId()),
+                JobPipelineSchedulerModel[].class);
+
+        // then
+        Assertions.assertEquals(1, allSchedulerResult.length);
+        Assertions.assertArrayEquals(allSchedulerResult, allJobsResult);
+        Assertions.assertTrue(allSchedulerResult[0].getStartDate().isAfter(createdSchedulerResult.getNextRunDate()));
+    }
 
     @Test
     @DisplayName("Should get scheduler")
@@ -465,24 +526,40 @@ public class SchedulerControllerIntegrationTest {
                         && p.isActive())
                 .sorted(Comparator.comparing(Scheduler::getNextRunDate))
                 .collect(Collectors.toList());
-        expectedSchedulerDomains.forEach(p -> p.setRunning(true));
-        expectedSchedulerDomains.forEach(p -> p.setRuns(null));
+
+        var expectedSchedulers = expectedSchedulerDomains.stream()
+                .map(s -> client.toBlocking().retrieve(
+                        HttpRequest.GET("/" + s.getId()),
+                        PipelineSchedulerModel.class))
+                .collect(Collectors.toList());
+        expectedSchedulers.forEach(p -> p.setRunning(true));
 
         // when
-        var result = client.toBlocking().retrieve(
-                HttpRequest.GET("/force/runAllAsync/" + cores), boolean.class);
+        var result = Arrays.stream(client.toBlocking().retrieve(
+                HttpRequest.GET("/force/runAllAsync/" + cores),
+                PipelineSchedulerModel[].class))
+                .collect(Collectors.toList());
 
         // then
-        var actualJobs = jobPipelineSchedulerRepository.findAll();
-        var actualSchedulers = jobPipelineSchedulerRepository.findAll().stream()
-                .map(JobRun::getScheduler)
+        var actualSchedulers = result.stream()
+                .map(PipelineSchedulerModel::toBuilder)
+                .map(p -> p.runs(new ArrayList<>()))
+                .map(PipelineSchedulerModel.PipelineSchedulerModelBuilder::build)
                 .collect(Collectors.toList());
-        actualSchedulers.forEach(p -> p.setRuns(null));
 
-        Assertions.assertTrue(result);
-        Assertions.assertEquals(expectedSchedulerDomains.size(), actualSchedulers.size());
-        Assertions.assertTrue(expectedSchedulerDomains.containsAll(actualSchedulers));
-        Assertions.assertTrue(actualSchedulers.containsAll(expectedSchedulerDomains));
+        Assertions.assertEquals(expectedSchedulers.size(), actualSchedulers.size());
+        Assertions.assertTrue(expectedSchedulers.containsAll(actualSchedulers));
+        Assertions.assertTrue(actualSchedulers.containsAll(expectedSchedulers));
+
+        result.forEach(s -> {
+            Assertions.assertEquals(1, s.getRuns().size());
+            Assertions.assertTrue(s.getRuns().get(0).getStartDate().isAfter(currentDateTime));
+            Assertions.assertEquals(s.getRuns().get(0).getPipelineId(), s.getPipelineId());
+            Assertions.assertNull(s.getRuns().get(0).getEndDate());
+
+            verify(jobPipelineClient, times(1))
+                    .start(s.getPipelineId(), s.getId(), s.getRuns().get(0).getId());
+        });
 
         verify(jobPipelineClient, times(expectedSchedulerDomains.size()))
                 .start(anyLong(), anyLong(), anyLong());

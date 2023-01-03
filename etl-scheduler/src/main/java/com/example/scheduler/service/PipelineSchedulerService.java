@@ -2,6 +2,7 @@ package com.example.scheduler.service;
 
 import com.example.scheduler.model.PipelineSchedulerModel;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,9 +26,11 @@ public interface PipelineSchedulerService {
 
     List<PipelineSchedulerModel> runAll();
 
-    void runAllAsync(int threadCount);
+    List<PipelineSchedulerModel> runAllAsync(int threadCount);
 
     void complete(int jobId, boolean success);
 
     PipelineSchedulerModel instantRun(long pipelineId);
+
+    LocalDateTime getNextCronExecutionDateTimeFromNow(String cron);
 }

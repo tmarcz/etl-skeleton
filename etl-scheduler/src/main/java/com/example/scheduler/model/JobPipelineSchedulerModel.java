@@ -20,6 +20,7 @@ import java.util.Date;
 public class JobPipelineSchedulerModel {
     private Long id;
 
+    private Long schedulerId;
     private PipelineSchedulerModel scheduler;
 
     private Long pipelineId;
